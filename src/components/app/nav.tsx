@@ -27,7 +27,7 @@ const CONFIGURE: Item[] = [
 
 /** Staff get the counter and nothing that could change the business. */
 const STAFF: Item[] = [
-  { href: "/staff", label: "Counter", icon: IconQueue },
+  { href: "/counter", label: "Counter", icon: IconQueue },
   { href: "/queue", label: "Queue", icon: IconToday },
 ];
 

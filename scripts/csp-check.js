@@ -95,7 +95,7 @@ let failures = 0;
     ["/qr", "qr (canvas + data: image)"],
     ["/billing", "billing"],
     ["/settings", "settings"],
-    ["/staff", "counter"],
+    ["/counter", "counter"],
   ]) {
     await visit(r, l);
   }

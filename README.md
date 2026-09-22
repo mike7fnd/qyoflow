@@ -19,13 +19,17 @@ npm run dev
 ### Supabase setup
 
 1. Create a project at [supabase.com](https://supabase.com/dashboard).
-2. Run the migrations **in order** in the SQL editor:
-   - `supabase/migrations/0001_schema.sql`
-   - `supabase/migrations/0002_functions.sql`
-   - `supabase/migrations/0003_rls.sql`
-   - `supabase/migrations/0004_fixes.sql` — only needed if you ran `0002` before
-     it was corrected. It is idempotent, so running it anyway is harmless.
-   - `supabase/migrations/0005_rate_limit.sql` — the shared rate-limit counter.
+2. Run every file in `supabase/migrations/` **in numerical order** in the SQL
+   editor. All five are idempotent — re-running one is always safe, so there is
+   no decision to make about which you need.
+
+   | | |
+   |---|---|
+   | `0001_schema.sql` | tables, enums, plan definitions |
+   | `0002_functions.sql` | the write surface: join, call, complete |
+   | `0003_rls.sql` | row level security, realtime |
+   | `0004_fixes.sql` | corrections to `0002` (a no-op on a fresh database) |
+   | `0005_rate_limit.sql` | the shared rate-limit counter |
 3. Copy your project URL, anon key and service-role key into `.env.local`.
 4. Optional: edit the owner id at the top of `supabase/seed.sql` and run it for a
    demo barbershop at `/q/abcbarbers`.
@@ -64,17 +68,31 @@ the `supabase_realtime` publication; confirm under **Database → Replication**.
 
 ## How it fits together
 
+Two people, two journeys, one queue between them.
+
 ```
-Customer                       Business
-────────                       ────────
-/q/<slug>      join flow       /dashboard   today at a glance
-/t/<token>     live ticket     /queue       the board + Call next
-                               /staff       counter mode (phone/tablet)
-                               /services    what people queue for
-                               /analytics   waits, peaks, service mix
-                               /qr          the printable poster
-                               /billing     plan + payments
-                               /settings    name, address, time zone
+CUSTOMER                            OWNER / STAFF
+────────                            ─────────────
+scan the QR at the door             sign up
+        ↓                                   ↓
+/q/<slug>   pick a service          /onboarding   name, services, QR
+        ↓                                   ↓
+/t/<token>  live ticket  ←── same ──→ /queue      run the line
+            leave, come back           │
+                                       ├─ Board    full list, for a desk
+                                       └─ Counter  big and simple, for a tablet
+```
+
+The two queue views are one destination with a switch between them, not two
+places to learn. Everything else is settings you visit rarely:
+
+```
+/dashboard   today at a glance, and the way in to the queue
+/analytics   waits, peaks, service mix
+/services    what people queue for
+/qr          the printable poster
+/billing     plan + payments
+/settings    name, address, time zone
 ```
 
 ### The security model

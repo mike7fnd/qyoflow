@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       // A ticket URL is a customer's private credential, and the signed-in app
       // has nothing to index.
-      disallow: ["/t/", "/api/", "/dashboard", "/queue", "/staff", "/billing", "/settings", "/services", "/analytics", "/qr", "/onboarding"],
+      disallow: ["/t/", "/api/", "/dashboard", "/queue", "/counter", "/billing", "/settings", "/services", "/analytics", "/qr", "/onboarding"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

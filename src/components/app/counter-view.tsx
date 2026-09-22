@@ -4,6 +4,7 @@ import { useCallback, useRef, useTransition } from "react";
 import { AnimatedNumber } from "@/components/animated-number";
 import { Button, Rule, StatusDot, cx } from "@/components/ui";
 import { toast } from "@/components/toast";
+import { QueueViewSwitch } from "@/components/app/queue-view-switch";
 import { useLiveQueue } from "@/lib/use-live-queue";
 import { useFlip, useListTransition } from "@/lib/use-list-transition";
 import { callNext, setEntryStatus } from "@/app/(app)/queue/actions";
@@ -45,29 +46,33 @@ export function CounterView({
   }, []);
 
   // Staff must never be shown an empty counter when the real problem is that
-  // we couldn't read the queue.
-  if (error && !data) {
-    return (
-      <div className="mx-auto flex min-h-dvh w-full max-w-[32rem] flex-col justify-center px-5 text-center">
-        <h1 className="t-h2 text-[var(--color-ink)]">{error}</h1>
-        <p className="mx-auto mt-2 max-w-[34ch] t-body text-[var(--color-ink-2)]">
-          Nobody has lost their place. Customers can still join while this screen
-          reconnects.
-        </p>
-        <Button size="lg" className="mx-auto mt-7" onClick={() => void refresh()}>
-          Try again
-        </Button>
-      </div>
-    );
-  }
+  // we couldn't read the queue. The header stays put either way, so the way
+  // back to the board doesn't disappear at the moment it's needed.
+  const unreachable = Boolean(error) && !data;
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[32rem] flex-col px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-6">
-      <header className="flex items-center justify-between gap-4">
-        <p className="min-w-0 truncate t-h3 text-[var(--color-ink)]">{businessName}</p>
-        {!open && <StatusDot tone="idle">Closed</StatusDot>}
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <p className="min-w-0 truncate t-h3 text-[var(--color-ink)]">{businessName}</p>
+          {!open && !unreachable && <StatusDot tone="idle">Closed</StatusDot>}
+        </div>
+        <QueueViewSwitch current="/counter" />
       </header>
 
+      {unreachable ? (
+        <div className="flex flex-1 flex-col justify-center px-1 text-center">
+          <h1 className="t-h2 text-[var(--color-ink)]">{error}</h1>
+          <p className="mx-auto mt-2 max-w-[34ch] t-body text-[var(--color-ink-2)]">
+            Nobody has lost their place. Customers can still join while this screen
+            reconnects.
+          </p>
+          <Button size="lg" className="mx-auto mt-7" onClick={() => void refresh()}>
+            Try again
+          </Button>
+        </div>
+      ) : (
+        <>
       {error && (
         <p
           role="status"
@@ -160,6 +165,8 @@ export function CounterView({
           {next ? `Call next — #${next.number}` : "Nobody waiting"}
         </Button>
       </div>
+        </>
+      )}
     </div>
   );
 }

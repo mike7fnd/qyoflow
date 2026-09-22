@@ -214,10 +214,6 @@ export function Select({ className, ...props }: ComponentProps<"select">) {
   return <select className={cx(FIELD_BASE, "select-field h-10", className)} {...props} />;
 }
 
-export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
-  return <textarea className={cx(FIELD_BASE, "min-h-24 py-2.5", className)} {...props} />;
-}
-
 /* ───────────────────────────────────────────────────────────── empty state */
 
 export function Empty({

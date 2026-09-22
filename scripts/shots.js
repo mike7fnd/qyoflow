@@ -173,7 +173,7 @@ const PHONE = { width: 390, height: 844 };
   await page.goto(BASE + "/analytics", { waitUntil: "networkidle" });
   await shot(page, "24-analytics-busy");
 
-  await page.goto(BASE + "/staff", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/counter", { waitUntil: "networkidle" });
   await shot(page, "25-counter-desktop");
 
   // The customer's view of the same moment.
@@ -194,7 +194,7 @@ const PHONE = { width: 390, height: 844 };
   for (const [route, name] of [
     ["/dashboard", "27-m-dashboard"],
     ["/queue", "28-m-queue"],
-    ["/staff", "29-m-counter"],
+    ["/counter", "29-m-counter"],
     ["/billing", "30-m-billing"],
   ]) {
     await mob.goto(BASE + route, { waitUntil: "networkidle" });

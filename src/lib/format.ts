@@ -46,14 +46,6 @@ export function hourLabel(hour: number) {
   return `${h}${hour < 12 ? "am" : "pm"}`;
 }
 
-export function ago(iso: string) {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const h = Math.floor(mins / 60);
-  return `${h}h ago`;
-}
-
 /** "just now" / "4 min ago" — used inline, so it stays short. */
 export function sinceShort(iso: string) {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
