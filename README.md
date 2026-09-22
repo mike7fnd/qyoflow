@@ -25,6 +25,7 @@ npm run dev
    - `supabase/migrations/0003_rls.sql`
    - `supabase/migrations/0004_fixes.sql` — only needed if you ran `0002` before
      it was corrected. It is idempotent, so running it anyway is harmless.
+   - `supabase/migrations/0005_rate_limit.sql` — the shared rate-limit counter.
 3. Copy your project URL, anon key and service-role key into `.env.local`.
 4. Optional: edit the owner id at the top of `supabase/seed.sql` and run it for a
    demo barbershop at `/q/abcbarbers`.
@@ -214,6 +215,66 @@ That run found two real bugs, both since fixed:
   still failed on the membership check inside, so nothing leaked, but the grants
   now actually restrict. Both fixes are in `0004_fixes.sql`.
 
+## Deploying
+
+```bash
+npm run typecheck && npm run lint && npm run build
+```
+
+### Environment
+
+| Variable | Required | Notes |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | yes | Project API URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Safe in the browser; RLS still applies |
+| `SUPABASE_SERVICE_ROLE_KEY` | yes | Server only. Account creation, billing webhook. **Never** expose to the client |
+| `NEXT_PUBLIC_SITE_URL` | yes | Your real `https://` origin |
+| `PAYMONGO_SECRET_KEY` | for payments | Unset ⇒ manual billing mode |
+| `PAYMONGO_WEBHOOK_SECRET` | for payments | Signs `POST /api/billing/webhook` |
+| `QYOFLOW_ENFORCE_ENV` | no | `1` applies the strict startup checks off-platform |
+
+`src/instrumentation.ts` validates all of this at boot and **refuses to start a
+deployment** that is misconfigured, rather than serving broken pages. Running
+`next start` on your own machine only warns, so you can test a production build
+locally.
+
+> **`NEXT_PUBLIC_SITE_URL` is the one that bites.** Every QR code encodes it at
+> the moment it is generated. Get it wrong and businesses print codes pointing
+> at localhost — and they will have taped them to a door before anyone notices.
+> Set it before the first business signs up.
+
+### Before going live
+
+- **Run all five migrations.** `npm run verify` exercises the schema, the RPCs,
+  the grants and tenant isolation end to end; it should report 42/42.
+- **Rotate the service-role key** if it has ever been pasted into a file, a
+  chat, or a screenshot. `supabase-ids.txt` in this repo holds keys in plaintext
+  and is gitignored — delete it once the values are in your host's secrets.
+- **Point the billing webhook** at `https://your-domain/api/billing/webhook` and
+  set `PAYMONGO_WEBHOOK_SECRET`. Unsigned requests are rejected with 401.
+- **Confirm realtime** is enabled for `queues` and `queue_entries`.
+- **Watch `GET /api/health`.** It returns 200 only when the app can actually
+  reach Postgres, so it catches a bad key or a paused project — not just a live
+  process.
+
+### What the app sends
+
+Security headers come from `next.config.mjs` and apply to every route: CSP,
+HSTS, `X-Frame-Options: DENY`, `nosniff`, a restrictive `Permissions-Policy`,
+and `Referrer-Policy: strict-origin-when-cross-origin`. Ticket URLs additionally
+get `Cache-Control: private, no-store` and `X-Robots-Tag: noindex` — a ticket
+link is a customer's credential and must not sit in a shared cache or a search
+index.
+
+`npm run check:csp` loads every screen in a real browser and fails on any CSP
+violation or console error. Run it after touching the policy: a CSP that looks
+right in `curl` proves nothing.
+
+The CSP allows `'unsafe-inline'` for scripts, which is what Next's hydration
+bootstrap needs without per-request nonces. It still blocks third-party script
+injection and, through `connect-src`, leaves exfiltrated data nowhere to go. To
+tighten it, emit a nonce from middleware and swap the directive.
+
 ## What is built, and what isn't
 
 Built: the whole MVP loop — signup, onboarding, services, QR poster, the public
@@ -229,4 +290,12 @@ Not built yet, in rough order of usefulness:
 - **Multiple locations.** The schema supports them and Pro allows 25; the UI
   currently uses the first location. A location switcher is the missing piece.
 - **Platform admin.** No cross-business console.
-- **Automated tests.** None.
+- **Error monitoring.** Failures go to `console.error` and whatever your host
+  collects. Wire up Sentry or equivalent before you have customers you can't
+  phone.
+- **Unit tests.** There are three integration checks (`verify`, `check:csp`,
+  `shots`) that exercise the real stack, but no unit suite and nothing running
+  in CI.
+- **Password reset.** Supabase can send one, but the flow has no UI here, and
+  sign-up no longer verifies the address (see *Sign-up and email*). Add
+  verification before relying on reset emails.

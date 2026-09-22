@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { friendlyError } from "@/lib/format";
-import { clientKey, hit } from "@/lib/rate-limit";
+import { allow, clientKey } from "@/lib/rate-limit";
 import type { Ticket } from "@/lib/types";
 
 const joinSchema = z.object({
@@ -31,7 +31,7 @@ export async function joinQueue(input: unknown): Promise<JoinResult> {
   }
 
   // A person joins a queue a handful of times a day, not a hundred.
-  if (!hit(await clientKey("join"), 8, 60_000)) {
+  if (!(await allow(await clientKey("join"), 8, 60_000))) {
     return { ok: false, error: "Too many attempts. Please wait a moment and try again." };
   }
 

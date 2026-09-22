@@ -6,11 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "node scripts/verify.js",
     "db:push": "supabase db push",
-    "shots": "node scripts/shots.js"
+    "shots": "node scripts/shots.js",
+    "check:csp": "node scripts/csp-check.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -22,11 +23,14 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.7.5",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.25",
     "playwright-core": "^1.63.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.3"

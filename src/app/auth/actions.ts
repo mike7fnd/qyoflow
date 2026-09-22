@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createAdminClient, createClient, hasServiceRole } from "@/lib/supabase/server";
-import { clientKey, hit } from "@/lib/rate-limit";
+import { allow, clientKey } from "@/lib/rate-limit";
 
 const credentials = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email address."),
@@ -65,7 +65,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
 
   // Creating users with the service role skips Supabase's own throttling, so the
   // throttle has to live here instead.
-  if (!hit(await clientKey("signup"), 5, 15 * 60_000)) {
+  if (!(await allow(await clientKey("signup"), 5, 15 * 60_000))) {
     return { error: "Too many sign-ups from this device. Please try again shortly." };
   }
 
@@ -112,7 +112,7 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   }
 
   // Slows down password guessing without getting in a real person's way.
-  if (!hit(await clientKey("signin"), 10, 5 * 60_000)) {
+  if (!(await allow(await clientKey("signin"), 10, 5 * 60_000))) {
     return { error: "Too many attempts. Please wait a minute and try again." };
   }
 
