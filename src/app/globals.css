@@ -1,0 +1,358 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════ tokens
+
+   Three weights, nine type steps, four radii, three elevations, one accent.
+   If a value isn't here, it shouldn't appear in a component.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  /* Neutrals — very slightly cool, so the product reads as software rather
+     than paper, without tipping into blue. */
+  --color-page: #f7f8f9;
+  --color-surface: #ffffff;
+  --color-sunken: #f1f2f4;
+  --color-hover: #ebedf0;
+
+  --color-ink: #101317;
+  --color-ink-2: #5b6472;
+  --color-ink-3: #8a93a0;
+
+  --color-line: rgba(16, 19, 23, 0.08);
+  --color-line-2: rgba(16, 19, 23, 0.14);
+
+  /* One accent. It marks the primary action and live state changes —
+     nothing else. */
+  --color-accent: #175cd3;
+  --color-accent-hover: #1450bc;
+  --color-accent-press: #113f96;
+  --color-accent-soft: #eef4fe;
+  --color-accent-ink: #0e47a6;
+
+  --color-success: #067647;
+  --color-success-dot: #12b76a;
+  --color-warn: #b54708;
+  --color-danger: #b42318;
+  --color-danger-hover: #a02419;
+  --color-danger-soft: #fef3f2;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+
+  /* Elevation carries a hairline ring instead of a border, so edges stay crisp
+     at any zoom and nothing needs `border: 1px solid`. */
+  --shadow-1: 0 1px 2px rgba(16, 19, 23, 0.04), 0 0 0 1px rgba(16, 19, 23, 0.05);
+  --shadow-2: 0 4px 12px -2px rgba(16, 19, 23, 0.07), 0 0 0 1px rgba(16, 19, 23, 0.05);
+  --shadow-3: 0 16px 40px -8px rgba(16, 19, 23, 0.16), 0 0 0 1px rgba(16, 19, 23, 0.06);
+
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 260ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════ base
+
+   These MUST sit inside @layer base. Unlayered CSS outranks every cascade
+   layer, so an unlayered `button { color: inherit }` silently beats
+   `text-[var(--color-ink-3)]` and every muted button renders black. */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-line);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    font-feature-settings: "cv05" 1, "cv08" 1;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-ink);
+  }
+
+  /* One focus treatment, everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Form controls don't inherit typography by default. Font family and
+     letter-spacing only — never `font:` shorthand, which would also reset the
+     size and weight a type utility just set. */
+  input,
+  textarea,
+  select,
+  button {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-ink-3);
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════ typography
+
+   Nine steps. Components reference these, never raw px, so hierarchy stays
+   consistent across pages that were built weeks apart. */
+
+@layer components {
+  .t-display {
+    font-size: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+    line-height: 1.04;
+    letter-spacing: -0.032em;
+    font-weight: 600;
+  }
+
+  .t-h1 {
+    font-size: clamp(1.625rem, 1.4rem + 0.9vw, 2.125rem);
+    line-height: 1.16;
+    letter-spacing: -0.024em;
+    font-weight: 600;
+  }
+
+  .t-h2 {
+    font-size: 1.3125rem;
+    line-height: 1.3;
+    letter-spacing: -0.018em;
+    font-weight: 600;
+  }
+
+  .t-h3 {
+    font-size: 1rem;
+    line-height: 1.45;
+    letter-spacing: -0.011em;
+    font-weight: 500;
+  }
+
+  .t-body {
+    font-size: 0.9375rem;
+    line-height: 1.62;
+    letter-spacing: -0.006em;
+  }
+
+  .t-body-sm {
+    font-size: 0.875rem;
+    line-height: 1.58;
+    letter-spacing: -0.004em;
+  }
+
+  .t-label {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: -0.002em;
+  }
+
+  .t-meta {
+    font-size: 0.75rem;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  /* Section labels. Used sparingly — uppercase is loud. */
+  .t-eyebrow {
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Numbers that change live. Tabular so the layout never twitches;
+     tracking pulled in because large digits set too loose by default. */
+  .t-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.04em;
+    font-weight: 600;
+    line-height: 0.92;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════ motion
+
+   Every animation below is tied to a state change. There is no ambient or
+   on-load motion — pages arrive composed, not assembled in front of you. */
+
+/* A number replaced by a new value: the old digit leaves in the direction the
+   value moved, the new one arrives from the opposite side. */
+@keyframes num-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.55em);
+  }
+}
+
+@keyframes num-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-0.55em);
+  }
+}
+
+.num-roll-up {
+  animation: num-in-up var(--dur-slow) var(--ease);
+}
+
+.num-roll-down {
+  animation: num-in-down var(--dur-slow) var(--ease);
+}
+
+/* A row joining a list. */
+@keyframes row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.row-enter {
+  animation: row-enter var(--dur-base) var(--ease);
+}
+
+/* A row being called or completed: it collapses out of the list rather than
+   vanishing, so the rows below visibly take its place. */
+@keyframes row-exit {
+  to {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+.row-exit {
+  animation: row-exit var(--dur-base) var(--ease-exit) forwards;
+  pointer-events: none;
+}
+
+/* Status message swapping in — used once per page, on the line that changes
+   meaning (waiting → you're next → it's your turn). */
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.msg-in {
+  animation: msg-in var(--dur-slow) var(--ease);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* The live dot. Slow enough to read as a heartbeat, not a blink. */
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.live-dot::after {
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-sunken) 0%,
+    var(--color-hover) 50%,
+    var(--color-sunken) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════ controls */
+
+/* Native select arrow, drawn to match the icon set. */
+.select-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4.5 6.5L8 10l3.5-3.5' stroke='%238a93a0' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* `sr-only` comes from Tailwind — redefining it here would only add a second
+   source of truth. */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
