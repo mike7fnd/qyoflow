@@ -271,9 +271,11 @@ locally.
 - **Point the billing webhook** at `https://your-domain/api/billing/webhook` and
   set `PAYMONGO_WEBHOOK_SECRET`. Unsigned requests are rejected with 401.
 - **Confirm realtime** is enabled for `queues` and `queue_entries`.
-- **Watch `GET /api/health`.** It returns 200 only when the app can actually
-  reach Postgres, so it catches a bad key or a paused project — not just a live
-  process.
+- **Watch `GET /api/health`.** It returns 200 only when the app can reach
+  Postgres *and* the migrations are complete, so it catches a bad key, a paused
+  project, or a migration someone skipped — not just a live process. The body
+  stays coarse (`degraded` / `migrations: incomplete`); which migration is
+  missing goes to the server log, not to a public endpoint.
 
 ### What the app sends
 

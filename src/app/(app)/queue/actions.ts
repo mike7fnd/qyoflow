@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { friendlyError } from "@/lib/format";
+import { logDbError } from "@/lib/log";
 import type { EntryStatus, LiveQueue } from "@/lib/types";
 
 const uuid = z.string().uuid();
@@ -83,7 +84,7 @@ export async function fetchLiveQueue(locationId: string): Promise<ActionResult<L
   const { data, error } = await supabase.rpc("qf_live_queue", { p_location_id: id.data });
 
   if (error) {
-    console.error("qf_live_queue failed", error);
+    logDbError("fetchLiveQueue: qf_live_queue failed", error);
     return { ok: false, error: "We couldn't load the queue." };
   }
   return { ok: true, data: data as LiveQueue };

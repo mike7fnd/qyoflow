@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyWebhook } from "@/lib/billing";
 import { applyPlan } from "@/lib/subscription";
+import { logDbError } from "@/lib/log";
 import type { PlanTier } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
   } catch (error) {
     // A 500 tells the provider to retry, which is what we want if our database
     // was briefly unavailable.
-    console.error("billing webhook failed", error);
+    logDbError("billing webhook: could not apply plan", error);
     return NextResponse.json({ error: "could not apply plan" }, { status: 500 });
   }
 
